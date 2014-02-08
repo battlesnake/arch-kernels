@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Kernel flavours
+KERNELS=`echo linux{,-ck,-lts,-rt}`
+
+# Parallel make
+export MAKEFLAGS="-j`grep -c processor /proc/cpuinfo`"
+
+# Optimise for native architecture
+export CFLAGS="-march=native -mtune=native -pipe"
+export CXXFLAGS="-march=native -mtune=native -pipe"
+
+# Mirrored grub?
+if [ -d /boot2 ]
+then
+	GRUB2=yes
+else
+	GRUB2=
+fi
+
+# Download & compile
+if [ "$1" == "build" ] || [ "$1" == "all" ]
+then
+	yaourt -Sybadd --devel --noconfirm $KERNELS
+	shift
+fi
+
+# Initramfs
+if [ "$1" == "init" ] || [ -z "$1" ] || [ "$1" == "all" ]
+then
+	for A in $KERNELS
+	do
+		mkinitcpio -M -p $A
+	done
+	[ "$GRUB2" ] && cp /boot/{vmlinuz,initramfs}* /boot2/
+	shift
+fi
+
+# Grub
+if [ "$1" == "grub" ] || [ -z "$1" ] || [ "$1" == "all" ]
+then
+	grub-mkconfig -o /boot/grub/grub.cfg
+	[ "$GRUB2" ] && grub-mkconfig -o /boot2/grub/grub.cfg
+	shift
+fi

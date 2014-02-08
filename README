@@ -1,0 +1,9 @@
+Mark's kernel build/update/install script
+
+./kernels [ all | build | init | grub ]
+
+  build     = download kernel sources via yaourt & compile using fairly good optimisation options
+  init      = create initramfs images
+  grub      = update grub configuration
+  all       = all of the above
+  <default> = init, grub
